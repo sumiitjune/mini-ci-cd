@@ -9,7 +9,7 @@ def home():
 # test webhook trigger
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    os.system("sh /scripts/deploy.sh")
+    return "Webhook received!", 200
     return "Deployment triggered!"
 
 if __name__ == '__main__':
