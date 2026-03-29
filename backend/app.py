@@ -6,7 +6,7 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return "Mini CI/CD Server Running 🚀"
-
+# test webhook trigger
 @app.route('/webhook', methods=['POST'])
 def webhook():
     os.system("sh ../scripts/deploy.sh")
