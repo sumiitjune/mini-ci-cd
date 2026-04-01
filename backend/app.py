@@ -8,6 +8,7 @@ app = Flask(__name__)
 LOG_FILE = "logs/deploy.log"
 
 def log(message):
+    os.makedirs("logs", exist_ok=True)  # ensure folder exists
     with open(LOG_FILE, "a") as f:
         f.write(f"{datetime.datetime.now()} - {message}\n")
 
@@ -20,10 +21,13 @@ def webhook():
     log("📩 Webhook triggered")
 
     try:
-        # 🔥 Get changed files
-        changes = subprocess.check_output(
-            "git diff --name-only HEAD~1 HEAD", shell=True
-        ).decode()
+        # Get changed files
+        try:
+            changes = subprocess.check_output(
+                "git diff --name-only HEAD~1 HEAD", shell=True
+            ).decode()
+        except:
+            changes = "No previous commit or git history not available"
 
         log(f"📝 Changed files:\n{changes}")
 
