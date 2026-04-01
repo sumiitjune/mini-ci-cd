@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask import send_file
 import os
 import datetime
 import subprocess
@@ -16,12 +17,19 @@ def log(message):
 def home():
     return "CI/CD Server Running 🚀"
 
+LAST_STATUS = {
+    "status": "idle",
+    "changes": "None",
+    "time": ""
+}
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    global LAST_STATUS
+
     log("📩 Webhook triggered")
 
     try:
-        # Get changed files
         try:
             changes = subprocess.check_output(
                 "git diff --name-only HEAD~1 HEAD", shell=True
@@ -31,19 +39,36 @@ def webhook():
 
         log(f"📝 Changed files:\n{changes}")
 
-        # 🚀 Deploy
         os.system("sh /scripts/deploy.sh")
 
         log("✅ Deployment successful")
 
-        return jsonify({
+        LAST_STATUS = {
             "status": "success",
-            "changed_files": changes
-        })
+            "changes": changes,
+            "time": str(datetime.datetime.now())
+        }
+
+        return "OK", 200
 
     except Exception as e:
         log(f"❌ Deployment failed: {e}")
-        return jsonify({"status": "failed", "error": str(e)})
+
+        LAST_STATUS = {
+            "status": "failed",
+            "changes": "",
+            "time": str(datetime.datetime.now())
+        }
+
+        return "Fail", 500
+
+@app.route('/dashboard')
+def dashboard():
+    return send_file("index.html")
+
+@app.route('/status')
+def status():
+    return LAST_STATUS
 
 @app.route('/logs')
 def get_logs():
@@ -55,3 +80,6 @@ def get_logs():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
+
+
+    
