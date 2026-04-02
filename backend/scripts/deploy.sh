@@ -2,7 +2,8 @@
 
 echo "🚀 Deploying app..."
 
-cd /app
+echo "📂 Going to project root..."
+cd /app/..
 
 echo "📂 Checking files..."
 ls
