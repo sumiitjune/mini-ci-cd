@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CI/CD Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 800px;
+    }
+
+    .status-success {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .status-fail {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    pre {
+      text-align: left;
+      background: black;
+      padding: 15px;
+      border-radius: 10px;
+      height: 300px;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>CI/CD Dashboard</h1>
+
+<div class="card">
+  <h3>Status: <span id="status">Loading...</span></h3>
+  <p>Last Run: <span id="time"></span></p>
+</div>
+
+<div class="card">
+  <h3>Changed Files</h3>
+  <pre id="changes"></pre>
+</div>
+
+<div class="card">
+  <h3>Logs</h3>
+  <pre id="logs"></pre>
+</div>
+
+<script>
+async function loadData() {
+  const res = await fetch("http://localhost:5001/status");
+  const data = await res.json();
+
+  const statusEl = document.getElementById("status");
+
+  statusEl.innerText = data.status;
+
+  if (data.status === "success") {
+    statusEl.className = "status-success";
+  } else {
+    statusEl.className = "status-fail";
+  }
+
+  document.getElementById("time").innerText = data.time;
+  document.getElementById("changes").innerText = data.changes;
+
+  const logsRes = await fetch("http://localhost:5001/logs");
+  let logs = await logsRes.text();
+
+  // 👉 Clean logs (remove extra spaces)
+  logs = logs.replace(/  +/g, ' ');
+
+  document.getElementById("logs").innerText = logs;
+}
+
+setInterval(loadData, 3000);
+loadData();
+</script>
+
+</body>
+</html>

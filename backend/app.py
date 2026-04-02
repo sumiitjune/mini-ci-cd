@@ -8,14 +8,18 @@ app = Flask(__name__)
 
 LOG_FILE = "logs/deploy.log"
 
+#def log(message):
+#    os.makedirs("logs", exist_ok=True)  # ensure folder exists
+#   with open(LOG_FILE, "a") as f:
+#       f.write(f"{datetime.datetime.now()} - {message}\n")
+
 def log(message):
-    os.makedirs("logs", exist_ok=True)  # ensure folder exists
     with open(LOG_FILE, "a") as f:
-        f.write(f"{datetime.datetime.now()} - {message}\n")
+        f.write(f"{datetime.datetime.now()} | {message}\n")
 
 @app.route('/')
 def home():
-    return "CI/CD Server Running 🚀"
+    return "CI/CD Server Running"
 
 LAST_STATUS = {
     "status": "idle",
