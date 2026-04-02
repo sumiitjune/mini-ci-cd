@@ -3,24 +3,37 @@ import os
 import datetime
 import subprocess
 import traceback
+import json
 
 app = Flask(__name__)
 
 LOG_FILE = "logs/deploy.log"
+STATUS_FILE = "status.json"
 
 # Ensure logs folder exists
 os.makedirs("logs", exist_ok=True)
 
+# ---------------- LOG FUNCTION ----------------
 def log(message):
     with open(LOG_FILE, "a") as f:
         f.write(f"{datetime.datetime.now()} | {message}\n")
 
-# 🔥 GLOBAL STATE (THIS WAS YOUR MISSING PIECE)
-LAST_STATUS = {
-    "status": "idle",
-    "changes": "None",
-    "time": ""
-}
+# ---------------- STATUS FUNCTIONS ----------------
+def save_status(data):
+    with open(STATUS_FILE, "w") as f:
+        json.dump(data, f)
+
+def load_status():
+    if not os.path.exists(STATUS_FILE):
+        return {
+            "status": "idle",
+            "changes": "None",
+            "time": ""
+        }
+    with open(STATUS_FILE, "r") as f:
+        return json.load(f)
+
+# ---------------- ROUTES ----------------
 
 @app.route('/')
 def home():
@@ -28,8 +41,6 @@ def home():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    global LAST_STATUS
-
     try:
         log("📩 Webhook triggered")
 
@@ -48,21 +59,22 @@ def webhook():
                 files.extend(commit.get("modified", []))
                 files.extend(commit.get("removed", []))
 
-        # Remove duplicates
-        files = list(set(files))
+        files = list(set(files))  # remove duplicates
 
         changed_files = "\n".join(files) if files else "No changes detected"
 
         log(f"📝 Changed files:\n{changed_files}")
 
-        # 🔥 UPDATE STATUS BEFORE DEPLOY
-        LAST_STATUS["status"] = "running"
-        LAST_STATUS["changes"] = changed_files
-        LAST_STATUS["time"] = str(datetime.datetime.now())
+        # 🔥 SAVE STATUS BEFORE DEPLOY
+        status_data = {
+            "status": "running",
+            "changes": changed_files,
+            "time": str(datetime.datetime.now())
+        }
+        save_status(status_data)
 
         log("🚀 Starting deployment...")
 
-        # 🔥 BETTER THAN os.system
         result = subprocess.run(
             ["sh", "/scripts/deploy.sh"],
             capture_output=True,
@@ -73,34 +85,34 @@ def webhook():
         log(f"📛 STDERR:\n{result.stderr}")
 
         if result.returncode != 0:
-            LAST_STATUS["status"] = "failed"
-            log("❌ Deployment failed")
+            status_data["status"] = "failed"
+            save_status(status_data)
 
-            return jsonify({
-                "status": "error",
-                "changes": files
-            }), 500
+            log("❌ Deployment failed")
+            return jsonify({"status": "error"}), 500
 
         # ✅ SUCCESS
-        LAST_STATUS["status"] = "success"
+        status_data["status"] = "success"
+        save_status(status_data)
+
         log("✅ Deployment successful")
 
-        return jsonify({
-            "status": "success",
-            "changes": files
-        }), 200
+        return jsonify({"status": "success"}), 200
 
     except Exception as e:
-        LAST_STATUS["status"] = "error"
-
         error_msg = str(e)
+
         log(f"💥 Error: {error_msg}")
         log(traceback.format_exc())
 
-        return jsonify({
+        # save error state
+        save_status({
             "status": "error",
-            "message": error_msg
-        }), 500
+            "changes": "Error occurred",
+            "time": str(datetime.datetime.now())
+        })
+
+        return jsonify({"status": "error", "message": error_msg}), 500
 
 
 @app.route('/dashboard')
@@ -110,7 +122,7 @@ def dashboard():
 
 @app.route('/status')
 def status():
-    return LAST_STATUS
+    return load_status()   # 🔥 IMPORTANT FIX
 
 
 @app.route('/logs')
