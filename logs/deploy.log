@@ -110,3 +110,42 @@ var
 no configuration file provided: not found
 
 2026-04-02 23:35:53.601714 | ✅ Deployment success
+2026-04-02 23:39:18.810793 | 📩 Webhook triggered
+2026-04-02 23:39:18.811666 | 📝 Changed files:
+backend/dockerfile
+docker-compose.yml
+logs/deploy.log
+backend/status.json
+backend/app.py
+backend/index.html
+2026-04-02 23:39:19.102414 | 🚀 Deploying app...
+📂 Going to project root...
+📂 Checking files...
+app
+bin
+boot
+dev
+etc
+home
+lib
+lib64
+media
+mnt
+opt
+proc
+root
+run
+sbin
+scripts
+srv
+sys
+tmp
+usr
+var
+🐳 Rebuilding containers...
+✅ Deployment done!
+
+2026-04-02 23:39:19.102565 | no configuration file provided: not found
+no configuration file provided: not found
+
+2026-04-02 23:39:19.103013 | ✅ Deployment success
