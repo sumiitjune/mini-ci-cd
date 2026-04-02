@@ -8,7 +8,7 @@ echo "📂 Checking files..."
 ls
 
 echo "🐳 Rebuilding containers..."
-docker compose down
-docker compose up --build -d
+docker-compose down
+docker-compose up --build -d
 
 echo "✅ Deployment done!"
