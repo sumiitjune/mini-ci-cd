@@ -72,3 +72,41 @@ backend/app.py
 backend/index.html
 logs/deploy.log
 2026-04-02 22:36:04.273837 | ✅ Deployment successful
+2026-04-02 22:44:08.063850 | 📝 Changed files:
+backend/app.py
+logs/deploy.log
+2026-04-02 22:44:08.401539 | ✅ Deployment successful
+2026-04-02 23:35:53.317534 | 📩 Webhook triggered
+2026-04-02 23:35:53.318559 | 📝 Changed files:
+No changes detected
+2026-04-02 23:35:53.601101 | 🚀 Deploying app...
+📂 Going to project root...
+📂 Checking files...
+app
+bin
+boot
+dev
+etc
+home
+lib
+lib64
+media
+mnt
+opt
+proc
+root
+run
+sbin
+scripts
+srv
+sys
+tmp
+usr
+var
+🐳 Rebuilding containers...
+✅ Deployment done!
+
+2026-04-02 23:35:53.601291 | no configuration file provided: not found
+no configuration file provided: not found
+
+2026-04-02 23:35:53.601714 | ✅ Deployment success

@@ -10,4 +10,4 @@ RUN apt-get update && apt-get install -y git
 RUN apt-get update && apt-get install -y docker.io docker-compose
 RUN pip install -r requirements.txt
 
-CMD ["python", "backend/app.py"]
+CMD ["python", "app.py"]
