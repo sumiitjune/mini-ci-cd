@@ -29,42 +29,38 @@ LAST_STATUS = {
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    global LAST_STATUS
-
-    log("📩 Webhook triggered")
-
     try:
-        try:
-            changes = subprocess.check_output(
-                "git diff --name-only HEAD~1 HEAD", shell=True
-            ).decode()
-        except:
-            changes = "No previous commit or git history not available"
+        data = request.json
 
-        log(f"📝 Changed files:\n{changes}")
+        if not data:
+            return jsonify({"error": "No JSON received"}), 400
 
-        os.system("sh /scripts/deploy.sh")
+        files = []
+
+        # Extract changed files safely
+        if "commits" in data:
+            for commit in data["commits"]:
+                files.extend(commit.get("added", []))
+                files.extend(commit.get("modified", []))
+                files.extend(commit.get("removed", []))
+
+        changed_files = "\n".join(files) if files else "No changes detected"
+
+        log(f"📝 Changed files:\n{changed_files}")
+
+        # Run deployment script
+        result = os.system("sh /scripts/deploy.sh")
+
+        if result != 0:
+            log("❌ Deployment script failed")
+            return jsonify({"status": "error", "message": "Deployment failed"}), 500
 
         log("✅ Deployment successful")
-
-        LAST_STATUS = {
-            "status": "success",
-            "changes": changes,
-            "time": str(datetime.datetime.now())
-        }
-
-        return "OK", 200
+        return jsonify({"status": "success"}), 200
 
     except Exception as e:
-        log(f"❌ Deployment failed: {e}")
-
-        LAST_STATUS = {
-            "status": "failed",
-            "changes": "",
-            "time": str(datetime.datetime.now())
-        }
-
-        return "Fail", 500
+        log(f"❌ Error: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/dashboard')
 def dashboard():
