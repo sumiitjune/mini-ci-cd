@@ -1,17 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
 echo "🚀 Deploying app..."
 
+# 🔥 GO TO PROJECT DIRECTORY
 cd /app
 
-echo "📂 Going to project root..."
-cd /app/..
+echo "📂 Current directory:"
+pwd
 
-echo "📂 Checking files..."
+echo "📂 Files here:"
 ls
 
-echo "🐳 Rebuilding containers..."
+# Pull latest code
+git pull origin master
+
+# Rebuild container
 docker-compose down
-docker-compose up --build -d
+docker-compose up -d --build
 
 echo "✅ Deployment done!"
