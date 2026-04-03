@@ -1,54 +1,84 @@
-from importlib.resources import files
-
 from flask import Flask, request, jsonify, send_file
 import os
 import datetime
 import subprocess
-import traceback
 import json
 
 app = Flask(__name__)
 
-# 🔥 FILE PATHS (IMPORTANT)
-STATUS_FILE = "/app/status.json"
-LOG_FILE = "/app/logs/deploy.log"
+LOG_FILE = "logs/deploy.log"
+STATUS_FILE = "status.json"
 
-os.makedirs("/app/logs", exist_ok=True)
+# Ensure logs folder exists
+os.makedirs("logs", exist_ok=True)
 
-# -------- LOG FUNCTION --------
+# ---------------- LOG FUNCTION ----------------
 def log(message):
+    timestamp = datetime.datetime.now()
+    
     with open(LOG_FILE, "a") as f:
-        f.write(f"{datetime.datetime.now()} | {message}\n")
+        f.write(f"{timestamp} | {message}\n")
 
-# -------- STATUS FUNCTIONS --------
+    # 🔥 Keep only last 100 lines
+    with open(LOG_FILE, "r") as f:
+        lines = f.readlines()
+
+    with open(LOG_FILE, "w") as f:
+        f.writelines(lines[-100:])
+
+
+# ---------------- STATUS FUNCTIONS ----------------
 def save_status(data):
     with open(STATUS_FILE, "w") as f:
         json.dump(data, f)
 
+
 def load_status():
     if not os.path.exists(STATUS_FILE):
-        save_status({
+        default = {
             "status": "idle",
             "changes": "None",
             "time": ""
-        })
-
-    try:
-        with open(STATUS_FILE, "r") as f:
-            return json.load(f)
-    except Exception as e:
-        log(f"Error reading status: {e}")
-        return {
-            "status": "error",
-            "changes": "Cannot read status",
-            "time": ""
         }
+        save_status(default)
+        return default
 
-# -------- ROUTES --------
+    with open(STATUS_FILE, "r") as f:
+        return json.load(f)
+
+
+# ---------------- FILTER CHANGED FILES ----------------
+def get_changed_files(data):
+    files = []
+
+    if data and "commits" in data:
+        for commit in data["commits"]:
+            files.extend(commit.get("added", []))
+            files.extend(commit.get("modified", []))
+            files.extend(commit.get("removed", []))
+
+    # remove duplicates
+    files = list(set(files))
+
+    # 🔥 filter unwanted files
+    filtered = []
+    for f in files:
+        if (
+            not f.startswith("logs/") and
+            "status.json" not in f and
+            not f.endswith(".log")
+        ):
+            filtered.append(f)
+
+    return "\n".join(filtered) if filtered else "No changes detected"
+
+
+# ---------------- ROUTES ----------------
 
 @app.route('/')
 def home():
-    return "CI/CD Running 🚀"
+    return "CI/CD Server Running 🚀"
+
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -56,31 +86,17 @@ def webhook():
         log("📩 Webhook triggered")
 
         data = request.get_json()
-        log(f"📦 RAW PAYLOAD: {data}")
 
-        files = []
+        if not data:
+            log("❌ No JSON received")
+            return jsonify({"error": "No JSON"}), 400
 
-        if data and "commits" in data:
-            for commit in data["commits"]:
-                files.extend(commit.get("added", []))
-                files.extend(commit.get("modified", []))
-                files.extend(commit.get("removed", []))
+        # 🔥 GET CLEAN CHANGED FILES
+        changed_files = get_changed_files(data)
 
-# remove duplicates
-        files = list(set(files))
-
-# 🔥 FILTER ONLY RELEVANT FILES (IMPORTANT)
-        filtered_files = []
-
-        for f in files:
-            if not f.startswith("logs/") and "status.json" not in f:
-                filtered_files.append(f)
-
-        changed_files = "\n".join(filtered_files) if filtered_files else "No changes detected"
-        
         log(f"📝 Changed files:\n{changed_files}")
 
-        # 🔥 SAVE STATUS BEFORE DEPLOY
+        # 🔥 UPDATE STATUS (RUNNING)
         status_data = {
             "status": "running",
             "changes": changed_files,
@@ -88,31 +104,35 @@ def webhook():
         }
         save_status(status_data)
 
-        # RUN DEPLOY
+        log("🚀 Pulling latest code...")
+
+        # 🔥 SIMPLE DEPLOY (SAFE)
         result = subprocess.run(
-            ["sh", "/scripts/deploy.sh"],
+            ["git", "pull", "origin", "master"],
             capture_output=True,
             text=True
         )
 
-        log(result.stdout)
-        log(result.stderr)
+        log(f"📤 {result.stdout}")
+        log(f"📛 {result.stderr}")
 
         if result.returncode != 0:
             status_data["status"] = "failed"
             save_status(status_data)
-            log("❌ Deployment failed")
-            return jsonify({"status": "failed"}), 500
 
+            log("❌ Deployment failed")
+            return jsonify({"status": "error"}), 500
+
+        # ✅ SUCCESS
         status_data["status"] = "success"
         save_status(status_data)
 
-        log("✅ Deployment success")
+        log("✅ Deployment successful")
+
         return jsonify({"status": "success"}), 200
 
     except Exception as e:
-        log(str(e))
-        log(traceback.format_exc())
+        log(f"💥 Error: {str(e)}")
 
         save_status({
             "status": "error",
@@ -130,16 +150,16 @@ def dashboard():
 
 @app.route('/status')
 def status():
-    return load_status()   # 🔥 THIS FIXES YOUR ISSUE
+    return load_status()
 
 
 @app.route('/logs')
-def logs():
+def get_logs():
     try:
-        with open(LOG_FILE) as f:
+        with open(LOG_FILE, "r") as f:
             return f.read()
     except:
-        return "No logs"
+        return "No logs yet"
 
 
 if __name__ == '__main__':
