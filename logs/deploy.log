@@ -149,3 +149,39 @@ var
 no configuration file provided: not found
 
 2026-04-02 23:39:19.103013 | ✅ Deployment success
+2026-04-02 23:40:59.401396 | 📩 Webhook triggered
+2026-04-02 23:40:59.402031 | 📝 Changed files:
+backend/status.json
+logs/deploy.log
+backend/index.html
+2026-04-02 23:40:59.730366 | 🚀 Deploying app...
+📂 Going to project root...
+📂 Checking files...
+app
+bin
+boot
+dev
+etc
+home
+lib
+lib64
+media
+mnt
+opt
+proc
+root
+run
+sbin
+scripts
+srv
+sys
+tmp
+usr
+var
+🐳 Rebuilding containers...
+✅ Deployment done!
+
+2026-04-02 23:40:59.730463 | no configuration file provided: not found
+no configuration file provided: not found
+
+2026-04-02 23:40:59.730770 | ✅ Deployment success
