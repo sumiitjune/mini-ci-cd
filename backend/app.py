@@ -1,3 +1,5 @@
+from importlib.resources import files
+
 from flask import Flask, request, jsonify, send_file
 import os
 import datetime
@@ -54,17 +56,28 @@ def webhook():
         log("📩 Webhook triggered")
 
         data = request.get_json()
+        log(f"📦 RAW PAYLOAD: {data}")
 
         files = []
+
         if data and "commits" in data:
             for commit in data["commits"]:
                 files.extend(commit.get("added", []))
                 files.extend(commit.get("modified", []))
                 files.extend(commit.get("removed", []))
 
+# remove duplicates
         files = list(set(files))
-        changed_files = "\n".join(files) if files else "No changes detected"
 
+# 🔥 FILTER ONLY RELEVANT FILES (IMPORTANT)
+        filtered_files = []
+
+        for f in files:
+            if not f.startswith("logs/") and "status.json" not in f:
+                filtered_files.append(f)
+
+        changed_files = "\n".join(filtered_files) if filtered_files else "No changes detected"
+        
         log(f"📝 Changed files:\n{changed_files}")
 
         # 🔥 SAVE STATUS BEFORE DEPLOY
