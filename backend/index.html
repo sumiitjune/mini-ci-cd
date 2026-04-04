@@ -10,7 +10,7 @@
 
   body {
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #100f2a, #1e1e3b);
+    background: radial-gradient(circle at top, #1a1a3a, #0a0f1f);
     color: #e2e8f0;
     margin: 0;
     padding: 0;
@@ -19,7 +19,11 @@
   h1 {
     text-align: center;
     padding: 20px;
-    font-size: 32px;
+    font-size: 34px;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .container {
@@ -32,11 +36,18 @@
   }
 
   .card {
-    background: #1e293b;
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
     padding: 20px;
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-    overflow: hidden; /* 🔥 prevents overflow */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    transition: all 0.25s ease;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.8);
   }
 
   .info-row {
@@ -46,33 +57,69 @@
   }
 
   .status-badge {
-    padding: 6px 14px;
+    padding: 6px 16px;
     border-radius: 20px;
     font-weight: bold;
-    font-size: 14px;
-    white-space: nowrap;
+    font-size: 13px;
+    letter-spacing: 0.5px;
   }
 
-  .success { background: #16a34a; color: white; }
-  .failed { background: #dc2626; color: white; }
-  .running { background: #facc15; color: black; }
-  .idle { background: #64748b; color: white; }
+  .success {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+  }
+
+  .failed {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    color: white;
+  }
+
+  .running {
+    background: linear-gradient(135deg, #facc15, #eab308);
+    color: black;
+    animation: pulse 1.5s infinite;
+  }
+
+  .idle {
+    background: linear-gradient(135deg, #64748b, #475569);
+    color: white;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
 
   pre {
     background: #020617;
     padding: 15px;
     border-radius: 12px;
     height: 250px;
-    overflow-x: auto;   /* 🔥 horizontal scroll instead of stretch */
+    overflow-x: auto;
     overflow-y: auto;
     font-size: 13px;
     border: 1px solid #334155;
-    white-space: pre-wrap;   /* 🔥 wrap long lines */
-    word-break: break-word;  /* 🔥 break long words */
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   .logs {
     height: 300px;
+  }
+
+  /* 🔥 Custom Scrollbar */
+  pre::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  pre::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 10px;
+  }
+
+  pre::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
   }
 
   .footer {
