@@ -79,7 +79,6 @@ def get_changed_files(data):
 def home():
     return "CI/CD Server Running 🚀"
 
-
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
@@ -91,12 +90,12 @@ def webhook():
             log("❌ No JSON received")
             return jsonify({"error": "No JSON"}), 400
 
-        # 🔥 GET CLEAN CHANGED FILES
+        # 🔥 GET CHANGED FILES
         changed_files = get_changed_files(data)
 
         log(f"📝 Changed files:\n{changed_files}")
 
-        # 🔥 UPDATE STATUS (RUNNING)
+        # 🔥 UPDATE STATUS → RUNNING
         status_data = {
             "status": "running",
             "changes": changed_files,
@@ -104,32 +103,13 @@ def webhook():
         }
         save_status(status_data)
 
-        log("🚀 Pulling latest code...")
+        # 🔥 RUN DEPLOY IN BACKGROUND (IMPORTANT)
+        subprocess.Popen(["sh", "/app/backend/scripts/deploy.sh"])
 
-        # 🔥 SIMPLE DEPLOY (SAFE)
-        result = subprocess.run(
-            ["sh", "/app/backend/scripts/deploy.sh"],
-            capture_output=True,
-            text=True
-        )
+        log("🚀 Deployment started in background")
 
-        log(f"📤 {result.stdout}")
-        log(f"📛 {result.stderr}")
-
-        if result.returncode != 0:
-            status_data["status"] = "failed"
-            save_status(status_data)
-
-            log("❌ Deployment failed")
-            return jsonify({"status": "error"}), 500
-
-        # ✅ SUCCESS
-        status_data["status"] = "success"
-        save_status(status_data)
-
-        log("✅ Deployment successful")
-
-        return jsonify({"status": "success"}), 200
+        # ✅ RETURN FAST → ngrok will show 200
+        return jsonify({"status": "started"}), 200
 
     except Exception as e:
         log(f"💥 Error: {str(e)}")
@@ -141,8 +121,7 @@ def webhook():
         })
 
         return jsonify({"status": "error"}), 500
-
-
+    
 @app.route('/dashboard')
 def dashboard():
     return send_file("index.html")
