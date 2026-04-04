@@ -11,51 +11,32 @@
   body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    background-size: 400% 400%;
-    animation: gradientMove 12s ease infinite;
+    background: #0f172a;
     color: #e2e8f0;
-  }
-
-  @keyframes gradientMove {
-    0% { background-position: 0% 50% }
-    50% { background-position: 100% 50% }
-    100% { background-position: 0% 50% }
   }
 
   h1 {
     text-align: center;
     padding: 20px;
-    font-size: 36px;
-    letter-spacing: 1px;
-    color: #fff;
+    font-size: 28px;
+    font-weight: 600;
+    color: #f1f5f9;
   }
 
   .container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
     width: 95%;
-    max-width: 1200px;
+    max-width: 1000px;
     margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 
   .card {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-    transition: 0.3s;
-  }
-
-  .card:hover {
-    transform: translateY(-6px) scale(1.01);
-    box-shadow: 0 15px 50px rgba(0,0,0,0.9);
-  }
-
-  .full {
-    grid-column: span 2;
+    background: #1e293b;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #334155;
   }
 
   .info-row {
@@ -66,78 +47,61 @@
 
   h3 {
     margin: 0;
+    font-size: 16px;
     font-weight: 500;
-    color: #cbd5f5;
   }
 
-  /* 🔥 STATUS STYLE */
+  /* STATUS */
   .status-badge {
-    padding: 10px 20px;
-    border-radius: 30px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .success {
-    background: linear-gradient(135deg, #00ff99, #00cc66);
-    color: black;
-    box-shadow: 0 0 20px #00ff99;
+    background: #22c55e;
+    color: #052e16;
   }
 
   .failed {
-    background: linear-gradient(135deg, #ff4d4d, #cc0000);
-    box-shadow: 0 0 20px #ff4d4d;
+    background: #ef4444;
+    color: #450a0a;
   }
 
   .running {
-    background: linear-gradient(135deg, #ffd633, #ffaa00);
-    color: black;
-    animation: pulse 1s infinite;
+    background: #facc15;
+    color: #422006;
   }
 
   .idle {
-    background: linear-gradient(135deg, #64748b, #334155);
+    background: #64748b;
+    color: white;
   }
 
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-    100% { transform: scale(1); }
-  }
-
-  /* 🔥 TERMINAL LOOK */
+  /* TEXT BLOCK */
   pre {
-    background: #000;
-    color: #00ff9c;
-    padding: 15px;
-    border-radius: 12px;
-    height: 260px;
+    background: #020617;
+    padding: 12px;
+    border-radius: 8px;
+    height: 220px;
     overflow-y: auto;
-    font-family: monospace;
     font-size: 13px;
-    border: 1px solid #0f172a;
+    border: 1px solid #1e293b;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: monospace;
   }
 
   .logs {
-    height: 320px;
-  }
-
-  /* SCROLLBAR */
-  pre::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  pre::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 10px;
+    height: 260px;
   }
 
   .footer {
     text-align: center;
-    margin: 20px;
+    margin: 15px;
     font-size: 12px;
-    opacity: 0.7;
+    color: #64748b;
   }
 
   </style>
@@ -151,10 +115,10 @@
 
   <div class="card">
     <div class="info-row">
-      <h3>System Status</h3>
+      <h3>Status</h3>
       <span id="status" class="status-badge idle">Loading</span>
     </div>
-    <p>Last Run: <span id="time"></span></p>
+    <p style="margin-top:10px;">Last Run: <span id="time"></span></p>
   </div>
 
   <div class="card">
@@ -162,15 +126,15 @@
     <pre id="changes"></pre>
   </div>
 
-  <div class="card full">
-    <h3>Deployment Logs</h3>
+  <div class="card">
+    <h3>Logs</h3>
     <pre id="logs" class="logs"></pre>
   </div>
 
 </div>
 
 <div class="footer">
-  CI/CD Monitoring Dashboard
+  CI/CD Monitoring System
 </div>
 
 <script>
@@ -198,7 +162,7 @@ async function loadData() {
     document.getElementById("changes").innerText = data.changes || "None";
 
     const logsRes = await fetch("/logs");
-    let logs = await logsRes.text();
+    const logs = await logsRes.text();
 
     const logsBox = document.getElementById("logs");
     logsBox.innerText = logs;
