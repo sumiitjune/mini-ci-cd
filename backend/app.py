@@ -108,7 +108,7 @@ def webhook():
 
         # 🔥 SIMPLE DEPLOY (SAFE)
         result = subprocess.run(
-            ["git", "pull", "origin", "master"],
+            ["sh", "/app/backend/scripts/deploy.sh"],
             capture_output=True,
             text=True
         )
