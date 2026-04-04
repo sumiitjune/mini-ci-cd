@@ -10,13 +10,7 @@ git config --global --add safe.directory /app
 echo "📥 Pulling latest code..."
 git pull origin master
 
-echo "🛑 Stopping old containers..."
-docker compose down
-
-echo "🐳 Rebuilding..."
-docker compose up -d --build
+echo "🔁 Restarting container (NO BUILD)..."
+docker compose restart
 
 echo "✅ Deployment done!"
-
-# 🔥 UPDATE STATUS FILE MANUALLY
-echo '{"status":"success","changes":"Updated","time":"'$(date)'"}' > backend/status.json
