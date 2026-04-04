@@ -1,21 +1,19 @@
 #!/bin/bash
+set -e
+
+cd /app
 
 echo "🚀 Deploying app..."
 
-# 🔥 GO TO PROJECT DIRECTORY
-cd /app
+git config --global --add safe.directory /app
 
-echo "📂 Current directory:"
-pwd
-
-echo "📂 Files here:"
-ls
-
-# Pull latest code
+echo "📥 Pulling latest code..."
 git pull origin master
 
-# Rebuild container
-docker-compose down
-docker-compose up -d --build
+echo "🛑 Stopping old containers..."
+docker compose down
+
+echo "🐳 Rebuilding containers..."
+docker compose up -d --build
 
 echo "✅ Deployment done!"
