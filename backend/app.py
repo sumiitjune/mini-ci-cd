@@ -77,12 +77,12 @@ def get_changed_files(data):
 
 @app.route('/')
 def home():
-    return "CI/CD Server Running 🚀"
+    return "CI/CD Server Running "
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        log("📩 Webhook triggered")
+        log(" Webhook triggered")
 
         data = request.get_json()
 
@@ -93,7 +93,7 @@ def webhook():
         # 🔥 GET CHANGED FILES
         changed_files = get_changed_files(data)
 
-        log(f"📝 Changed files:\n{changed_files}")
+        log(f" Changed files:\n{changed_files}")
 
         # 🔥 UPDATE STATUS → RUNNING
         status_data = {
@@ -106,7 +106,7 @@ def webhook():
         # 🔥 RUN DEPLOY IN BACKGROUND (IMPORTANT)
         subprocess.Popen(["sh", "/app/backend/scripts/deploy.sh"])
 
-        log("🚀 Deployment started in background")
+        log(" Deployment started in background")
 
         # ✅ RETURN FAST → ngrok will show 200
         return jsonify({"status": "started"}), 200
